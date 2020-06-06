@@ -1510,7 +1510,10 @@ std::string Item::getNameDescription(const ItemType& it, const Item* item /*= nu
 			s << name;
 		}
 	} else {
-		s << "an item of type " << it.id;
+		if (addArticle) {
+			s << "an ";
+		}
+		s << "item of type " << it.id;
 	}
 	return s.str();
 }
@@ -1650,14 +1653,15 @@ void ItemAttributes::removeAttribute(itemAttrTypes type)
 		return;
 	}
 
-	auto prev_it = attributes.cbegin();
+	auto prev_it = attributes.rbegin();
 	if ((*prev_it).type == type) {
-		attributes.pop_front();
+		attributes.pop_back();
 	} else {
-		auto it = prev_it, end = attributes.cend();
+		auto it = prev_it, end = attributes.rend();
 		while (++it != end) {
 			if ((*it).type == type) {
-				attributes.erase_after(prev_it);
+				(*it) = attributes.back();
+				attributes.pop_back();
 				break;
 			}
 			prev_it = it;
@@ -1720,8 +1724,8 @@ ItemAttributes::Attribute& ItemAttributes::getAttr(itemAttrTypes type)
 	}
 
 	attributeBits |= type;
-	attributes.emplace_front(type);
-	return attributes.front();
+	attributes.emplace_back(type);
+	return attributes.back();
 }
 
 void Item::startDecaying()

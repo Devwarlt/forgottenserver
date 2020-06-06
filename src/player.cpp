@@ -1644,6 +1644,11 @@ void Player::addExperience(Creature* source, uint64_t exp, bool sendText/* = fal
 		g_game.changeSpeed(this, 0);
 		g_game.addCreatureHealth(this);
 
+		const uint32_t protectionLevel = static_cast<uint32_t>(g_config.getNumber(ConfigManager::PROTECTION_LEVEL));
+		if (prevLevel < protectionLevel && level >= protectionLevel) {
+			g_game.updateCreatureWalkthrough(this);
+		}
+
 		if (party) {
 			party->updateSharedExperience();
 		}
@@ -1720,6 +1725,11 @@ void Player::removeExperience(uint64_t exp, bool sendText/* = false*/)
 
 		g_game.changeSpeed(this, 0);
 		g_game.addCreatureHealth(this);
+		
+		const uint32_t protectionLevel = static_cast<uint32_t>(g_config.getNumber(ConfigManager::PROTECTION_LEVEL));
+		if (oldLevel >= protectionLevel && level < protectionLevel) {
+			g_game.updateCreatureWalkthrough(this);
+		}
 
 		if (party) {
 			party->updateSharedExperience();
@@ -3083,7 +3093,7 @@ void Player::internalAddThing(uint32_t index, Thing* thing)
 	}
 
 	//index == 0 means we should equip this item at the most appropiate slot (no action required here)
-	if (index > 0 && index < 11) {
+	if (index > CONST_SLOT_WHEREEVER && index <= CONST_SLOT_LAST) {
 		if (inventory[index]) {
 			return;
 		}
