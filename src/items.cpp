@@ -148,6 +148,7 @@ const std::unordered_map<std::string, ItemParseAttributes_t> ItemParseAttributes
 	{"walkstack", ITEM_PARSE_WALKSTACK},
 	{"blocking", ITEM_PARSE_BLOCKING},
 	{"allowdistread", ITEM_PARSE_ALLOWDISTREAD},
+	{"storeitem", ITEM_PARSE_STOREITEM},
 };
 
 const std::unordered_map<std::string, ItemTypes_t> ItemTypesMap = {
@@ -540,18 +541,18 @@ void Items::buildInventoryList()
 
 void Items::parseItemNode(const pugi::xml_node& itemNode, uint16_t id)
 {
-	if (id > 30000 && id < 30100) {
-		id -= 30000;
-
-		if (id >= items.size()) {
-			items.resize(id + 1);
-		}
+	if (id > 0 && id < 100) {
 		ItemType& iType = items[id];
 		iType.id = id;
 	}
 
 	ItemType& it = getItemType(id);
 	if (it.id == 0) {
+		return;
+	}
+
+	if (!it.name.empty()) {
+		std::cout << "[Warning - Items::parseItemNode] Duplicate item with id: " << id << std::endl;
 		return;
 	}
 
@@ -1348,6 +1349,11 @@ void Items::parseItemNode(const pugi::xml_node& itemNode, uint16_t id)
 
 				case ITEM_PARSE_ALLOWDISTREAD: {
 					it.allowDistRead = booleanString(valueAttribute.as_string());
+					break;
+				}
+
+				case ITEM_PARSE_STOREITEM: {
+					it.storeItem = booleanString(valueAttribute.as_string());
 					break;
 				}
 
